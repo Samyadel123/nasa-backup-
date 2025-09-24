@@ -1,0 +1,18 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+inital look.ipynb
+downlad_script.sh
+cumulative_2025.09.21_16.16.19.csv
+k2-footprints.csv
+TOI_2025.09.18_10.59.04.csv
+# data
+data_nasa/
+
