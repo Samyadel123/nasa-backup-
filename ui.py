@@ -3,8 +3,9 @@ import pandas as pd
 from src.clean import clean_data
 from sklearn.model_selection import train_test_split
 from src.preprocessing import process
-from src.train import train_model, evaluate_model, save_model
+from src.train import train_model, evaluate_model, save_model, predict_exoplanet
 from datetime import datetime
+from sklearn.preprocessing import StandardScaler
 import joblib
 
 # models
@@ -26,7 +27,12 @@ if uploaded_file is not None:
     st.sidebar.success("File uploaded successfully! Ready for processing.")
     # Logic to load_data and preprocess_data would go here
     data = pd.read_csv(uploaded_file)  # Example for CSV
-    X, y = clean_data(data, target_col="koi_pdisposition")
+
+    if "df" not in st.session_state:
+        st.session_state.df = data
+
+    X, y = clean_data(st.session_state.df, target_col="koi_pdisposition")
+    ##st.session_state.df = pd.concat([X, y], axis=1)
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
@@ -36,7 +42,8 @@ if uploaded_file is not None:
 
 # Model Training/Retraining
 st.sidebar.header("⚙️ Model Training")
-if st.sidebar.button("Train/Retrain Model"):
+train_btn = st.sidebar.button("Train/Retrain Model")
+if train_btn:
     st.sidebar.info("Training initiated... Please wait.")
     my_svm = SVC()
     my_rf = RandomForestClassifier()
@@ -44,9 +51,18 @@ if st.sidebar.button("Train/Retrain Model"):
     train_model(my_rf, X_train, y_train)
     train_model(my_svm, X_train, y_train)
     train_model(my_lr, X_train, y_train)
+
+    y_pred_rf = predict_exoplanet(my_rf, X_test)
+    y_pred_lr = predict_exoplanet(my_lr, X_test)
+    y_pred_svm = predict_exoplanet(my_svm, X_test)
+    st.session_state.df["rf_prediction"] = y_pred_rf
+    st.session_state.df["lr_prediction"] = y_pred_lr
+    st.session_state.df["svm_prediction"] = y_pred_svm
+
     save_model(my_svm, "models/svm_model.joblib")
     save_model(my_rf, "models/rf_model.joblib")
     save_model(my_lr, "models/lr_model.joblib")
+
     st.sidebar.success("Models trained and saved!")
 
 st.sidebar.markdown("---")
@@ -57,8 +73,13 @@ st.sidebar.caption(f"Last Training: {datetime.now().strftime('%Y-%m-%d %H:%M:%S'
 st.title("🌌 Exoplanet Deduction System")
 st.subheader("An interactive tool for classifying exoplanetary data.")
 
-tab1, tab2, tab3 = st.tabs(
-    ["🔭 Predict & Explore", "📊 Model Performance", "🔧 Hyperparameter Tuning"]
+tab1, tab2, tab3, tab4 = st.tabs(
+    [
+        "🔭 Predict & Explore",
+        "📊 Model Performance",
+        "🔧 Hyperparameter Tuning",
+        "View Table",
+    ]
 )
 
 # -----------------
@@ -105,7 +126,57 @@ with tab1:
     ra = st.number_input("RA", min_value=0.0, value=290.0)
     dec = st.number_input("DEC", min_value=-90.0, max_value=90.0, value=45.0)
     koi_kepmag = st.number_input("Koi Kepmag", min_value=0.0, value=12.0)
-
+    input_data = pd.DataFrame(
+        {
+            "koi_score": [koi_score],
+            "koi_fpflag_nt": [koi_fpflag_nt],
+            "koi_fpflag_ss": [koi_fpflag_ss],
+            "koi_fpflag_co": [koi_fpflag_co],
+            "koi_fpflag_ec": [koi_fpflag_ec],
+            "koi_period": [koi_period],
+            "koi_time0bk": [koi_time0bk],
+            "koi_impact": [koi_impact],
+            "koi_impact_err1": [koi_impact_err1],
+            "koi_impact_err2": [koi_impact_err2],
+            "koi_duration": [koi_duration],
+            "koi_duration_err1": [koi_duration_err1],
+            "koi_duration_err2": [koi_duration_err2],
+            "koi_depth": [koi_depth],
+            "koi_depth_err1": [koi_depth_err1],
+            "koi_depth_err2": [koi_depth_err2],
+            "koi_prad": [koi_prad],
+            "koi_prad_err1": [koi_prad_err1],
+            "koi_prad_err2": [koi_prad_err2],
+            "koi_teq": [koi_teq],
+            "koi_insol": [koi_insol],
+            "koi_insol_err1": [koi_insol_err1],
+            "koi_insol_err2": [koi_insol_err2],
+            "koi_model_snr": [koi_model_snr],
+            "koi_tce_plnt_num": [koi_tce_plnt_num],
+            "koi_steff": [koi_steff],
+            "koi_steff_err1": [koi_steff_err1],
+            "koi_steff_err2": [koi_steff_err2],
+            "koi_slogg": [koi_slogg],
+            "koi_srad": [koi_srad],
+            "koi_srad_err1": [koi_srad_err1],
+            "koi_srad_err2": [koi_srad_err2],
+            "ra": [ra],
+            "dec": [dec],
+            "koi_kepmag": [koi_kepmag],
+        }
+    )
+    # load models
+    my_svm = joblib.load("models/svm_model.joblib")
+    my_rf = joblib.load("models/rf_model.joblib")
+    my_lr = joblib.load("models/lr_model.joblib")
+    btr = st.button("Submit for Prediction")
+    if btr:
+        # scaling
+        scaler = StandardScaler()
+        input_data = StandardScaler.fit_transform(input_data)
+        st.write(f"svm {my_svm.predict(input_data)}")
+        st.write(f"rf {my_rf.predict(input_data)}")
+        st.write(f"lr {my_lr.predict(input_data)}")
 # -----------------
 # TAB 2: Model Performance (Statistics about Accuracy)
 # -----------------
@@ -206,3 +277,8 @@ with tab3:
     st.markdown(
         "**Note:** Retraining may take several minutes depending on the dataset size."
     )
+
+with tab4:
+    st.header("Exoplanet Data Table")
+    st.markdown("View the raw exoplanet data used for training and predictions.")
+    st.dataframe(st.session_state.df)

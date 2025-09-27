@@ -14,6 +14,18 @@ def train_model(model, X_train: pd.DataFrame, y_train: pd.Series) -> None:
     """
     model.fit(X_train, y_train)
 
+def predict_exoplanet(model, X: pd.DataFrame) -> pd.Series:
+    
+    """Predicts the class labels for the given input data using the trained model.
+
+    Args:
+        model: The trained machine learning model.
+        X (pd.DataFrame): The input features for prediction.
+
+    Returns:
+        pd.Series: The predicted class labels.
+    """
+    return pd.Series(model.predict(X))
 
 def evaluate_model(model, X_test: pd.DataFrame, y_test: pd.Series) -> dict:
     """Evaluates the given model using the provided test data.
