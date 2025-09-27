@@ -1,8 +1,6 @@
 import pandas as pd
 
 
-
-
 def train_model(model, X_train: pd.DataFrame, y_train: pd.Series) -> None:
     """Trains the given model using the provided training data.
 
@@ -33,6 +31,7 @@ def evaluate_model(model, X_test: pd.DataFrame, y_test: pd.Series) -> dict:
 
     report = classification_report(y_test, y_pred, output_dict=True)
     return report
+
 
 def save_model(model, file_path: str) -> None:
     """Saves the trained model to a file.
