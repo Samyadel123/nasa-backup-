@@ -41,18 +41,17 @@ you should have uv
 
 1.  **Clone the repository:**
     ```bash
-    git clone git clone https://github.com/Samyadel123/nasa-backup-
-    
+    git clone git clone https://github.com/Samyadel123/nasa-backup-.git
+    ```
 
 2.  **Install dependencies:**
-    *(Ensure your `requirements.txt` includes `streamlit`, `pandas`, `scikit-learn`, etc.)*
     ```bash
     uv sync
     ```
 
 3.  **Run the Streamlit application:**
     ```bash
-    streamlit run app.py
+    streamlit run ui.py
     ```
     The app will open automatically in your browser at `http://localhost:8501`.
 
@@ -80,8 +79,4 @@ The application is split into the **Sidebar** (for system control) and the **Mai
 #### 🔧 Hyperparameter Tuning
 * Select the model type (if multiple are available).
 * Adjust the model's parameters using the provided sliders and selectors.
-* Click **"Apply Changes and Retrain Model (Tuning)"** to train a new model instance with your specified configuration.
-
----
-
-## 📂 Project Structure
+* Click **"Apply Changes and Retrain Model (Tuning)"** to train a new model instance with your specified configuratio 
